@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Mid-Year Review — Individual Feedback</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-elevated: #1f242c;
+      --surface-hover: #262c36;
+      --border: #30363d;
+      --border-subtle: #21262d;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --success-text: #3fb950;
+      --danger: #f85149;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Nav */
+    .top-nav {
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(22, 27, 34, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .top-nav-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .brand-pill {
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 36px 24px 0;
+    }
+
+    /* Auth Box */
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 28px;
+      max-width: 480px;
+      margin: 40px auto 0;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+    }
+
+    .auth-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .auth-desc {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pwd-status {
+      font-size: 0.74rem;
+      text-transform: none;
+      letter-spacing: normal;
+      font-weight: 500;
+      color: #60a5fa;
+    }
+
+    .form-select, .form-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .form-select:focus, .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-access {
+      width: 100%;
+      padding: 11px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background-color 0.15s;
+    }
+
+    .btn-access:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-access:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Results View */
+    .results-view {
+      display: none;
+    }
+
+    .user-header-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #93c5fd;
+    }
+
+    .user-name {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .user-role {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-switch {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-switch:hover {
+      background: var(--surface-hover);
+      color: #fff;
+    }
+
+    /* KPI Highlights */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+
+    .kpi-label {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #60a5fa;
+      margin-top: 6px;
+      font-feature-settings: "tnum";
+    }
+
+    /* Feedback list */
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .feedback-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feedback-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+
+    .feedback-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .reviewer-identity {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #e6edf3;
+    }
+
+    .pts-badge {
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: #93c5fd;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .feedback-text {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.55;
+      white-space: pre-line;
+    }
+
+    .empty-card {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 36px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    /* Error Toast */
+    .toast {
+      position: fixed;
+      top: 68px;
+      right: 24px;
+      max-width: 360px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: #3c1e21;
+      border: 1px solid #f85149;
+      color: #ff7b72;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: none;
+    }
+
+    .toast.info {
+      background: #1f3724;
+      border: 1px solid #238636;
+      color: #7ee787;
+    }
+
+    @media (max-width: 600px) {
+      .user-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="top-nav-inner">
+      <div class="nav-brand">
+        <span>Team Performance Review</span>
+        <span class="brand-pill">Private Review Portal</span>
+      </div>
+      <div class="nav-links">
+        <a href="/">Submit Feedback</a>
+        <a href="/qr">QR Code</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <!-- Member Authentication Screen -->
+    <div class="auth-card" id="authBox">
+      <h2 class="auth-title">View Your Mid-Year Review</h2>
+      <p class="auth-desc" id="authDesc">
+        Select your name. The first time you access your review, you can create your own personal password.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label" for="memberSelect">Select Your Name</label>
+        <select id="memberSelect" class="form-select" onchange="onMemberSelected()">
+          <option value="">-- Choose your profile --</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          <span id="passwordLabelText">Password</span>
+          <span class="pwd-status" id="pwdStatus"></span>
+        </label>
+        <input type="password" id="passcodeInput" class="form-input" placeholder="Enter password" autocomplete="off">
+      </div>
+
+      <button class="btn-access" id="btnAccess" onclick="authenticateAndLoad()">Access My Review</button>
+    </div>
+
+    <!-- Individual Member Review View -->
+    <div class="results-view" id="resultsView">
+      <div class="user-header-card">
+        <div class="user-profile">
+          <div class="user-avatar" id="userAvatar">--</div>
+          <div>
+            <div class="user-name" id="userName">--</div>
+            <div class="user-role" id="userTopic">Mid-Year Performance Review</div>
+          </div>
+        </div>
+        <button class="btn-switch" onclick="logout()">Switch Member</button>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Points Received</div>
+          <div class="kpi-value" id="kpiScore">0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Reviews with Feedback</div>
+          <div class="kpi-value" id="kpiReviews">0</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span>Peer Feedback & Comments</span>
+        <span style="font-size: 0.78rem; font-weight: 500; color: var(--text-dim);" id="feedbackCounter">0 comments</span>
+      </div>
+
+      <div class="feedback-stack" id="feedbackStack">
+        <!-- Rendered items -->
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let people = [];
+
+    async function loadMembers() {
+      try {
+        const res = await fetch('/api/people');
+        people = await res.json();
+        const selectEl = document.getElementById('memberSelect');
+        selectEl.innerHTML = '<option value="">-- Choose your profile --</option>' + 
+          people.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
+
+        const storedId = sessionStorage.getItem('my_review_id');
+        const storedPass = sessionStorage.getItem('my_review_pass');
+        if (storedId && storedPass) {
+          document.getElementById('memberSelect').value = storedId;
+          document.getElementById('passcodeInput').value = storedPass;
+          onMemberSelected();
+          authenticateAndLoad();
+        }
+      } catch (err) {
+        showToast('Failed to load team members');
+      }
+    }
+
+    function onMemberSelected() {
+      const personId = parseInt(document.getElementById('memberSelect').value, 10);
+      const person = people.find(p => p.id === personId);
+      const labelText = document.getElementById('passwordLabelText');
+      const pwdStatus = document.getElementById('pwdStatus');
+      const passInput = document.getElementById('passcodeInput');
+      const btn = document.getElementById('btnAccess');
+
+      if (!person) {
+        labelText.textContent = 'Password';
+        pwdStatus.textContent = '';
+        passInput.placeholder = 'Enter password';
+        btn.textContent = 'Access My Review';
+        return;
+      }
+
+      if (person.hasPassword) {
+        labelText.textContent = 'Enter Password';
+        pwdStatus.textContent = 'Password protected';
+        passInput.placeholder = 'Enter your established password';
+        btn.textContent = 'Sign In to My Review';
+      } else {
+        labelText.textContent = 'Set Your Password';
+        pwdStatus.textContent = 'First time setup';
+        passInput.placeholder = 'Create a password of your choice';
+        btn.textContent = 'Save Password & Access Review';
+      }
+    }
+
+    async function authenticateAndLoad() {
+      const personId = document.getElementById('memberSelect').value;
+      const passcode = document.getElementById('passcodeInput').value.trim();
+
+      if (!personId) {
+        showToast('Please select your name');
+        return;
+      }
+      if (!passcode) {
+        showToast('Please enter a password');
+        return;
+      }
+
+      const btn = document.getElementById('btnAccess');
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/my-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ personId, passcode })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          sessionStorage.setItem('my_review_id', personId);
+          sessionStorage.setItem('my_review_pass', passcode);
+          // Mark as hasPassword in local memory
+          const p = people.find(item => item.id === parseInt(personId, 10));
+          if (p) p.hasPassword = true;
+
+          if (data.newlySet) {
+            showToast('Password saved successfully!', true);
+          }
+          renderPersonalReview(data);
+        } else {
+          showToast(data.error || 'Access denied');
+        }
+      } catch (err) {
+        showToast('Network error connecting to review server');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Access My Review';
+      }
+    }
+
+    function renderPersonalReview(data) {
+      document.getElementById('authBox').style.display = 'none';
+      document.getElementById('resultsView').style.display = 'block';
+
+      const person = data.person;
+      const initials = person.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+      document.getElementById('userAvatar').textContent = initials;
+      document.getElementById('userName').textContent = person.name;
+      document.getElementById('userTopic').textContent = person.topic || 'Mid-Year Review';
+      document.getElementById('kpiScore').textContent = data.totalScore;
+      document.getElementById('kpiReviews').textContent = data.evaluatorCount;
+
+      const stackEl = document.getElementById('feedbackStack');
+      const validComments = (data.feedback || []).filter(f => f.comment && f.comment.trim());
+
+      document.getElementById('feedbackCounter').textContent = `${validComments.length} comment${validComments.length === 1 ? '' : 's'}`;
+
+      if (data.feedback.length === 0) {
+        stackEl.innerHTML = '<div class="empty-card">No reviews or scores have been submitted for you yet. Check back during or after the meeting.</div>';
+        return;
+      }
+
+      stackEl.innerHTML = data.feedback.map(f => {
+        const hasComment = f.comment && f.comment.trim();
+        return `
+          <div class="feedback-item">
+            <div class="feedback-top">
+              <span class="reviewer-identity">${escapeHtml(f.reviewerName)}</span>
+              <span class="pts-badge">+${f.pointsAwarded} pts</span>
+            </div>
+            ${hasComment ? `<div class="feedback-text">${escapeHtml(f.comment)}</div>` : '<div style="font-size: 0.8rem; color: var(--text-dim); font-style: italic;">Points awarded without written comments.</div>'}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function logout() {
+      sessionStorage.removeItem('my_review_id');
+      sessionStorage.removeItem('my_review_pass');
+      document.getElementById('passcodeInput').value = '';
+      document.getElementById('authBox').style.display = 'block';
+      document.getElementById('resultsView').style.display = 'none';
+      onMemberSelected();
+    }
+
+    function showToast(msg, isSuccess = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast ' + (isSuccess ? 'info' : '');
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    document.getElementById('passcodeInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') authenticateAndLoad();
+    });
+
+    loadMembers();
+  </script>
+</body>
+</html>

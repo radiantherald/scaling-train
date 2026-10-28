@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mid-Year Performance Review Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-elevated: #1f242c;
+      --surface-hover: #262c36;
+      --border: #30363d;
+      --border-subtle: #21262d;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --success-text: #3fb950;
+      --danger: #f85149;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding-bottom: 120px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Nav */
+    .top-nav {
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(22, 27, 34, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .top-nav-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .brand-pill {
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* Header */
+    header {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px 24px 16px;
+    }
+
+    h1 {
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+    }
+
+    /* Reviewer Identity input */
+    .reviewer-identity {
+      max-width: 920px;
+      margin: 16px auto 0;
+      padding: 0 24px;
+    }
+
+    .identity-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .identity-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .identity-hint {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+
+    .identity-input {
+      width: 280px;
+      max-width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.86rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .identity-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Budget bar */
+    .budget-tracker {
+      position: sticky;
+      top: 57px;
+      z-index: 80;
+      max-width: 920px;
+      margin: 16px auto 24px;
+      padding: 0 24px;
+    }
+
+    .tracker-card {
+      background: rgba(22, 27, 34, 0.95);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 10px;
+      padding: 16px 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .budget-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .budget-numbers {
+      font-size: 1.05rem;
+      font-weight: 600;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .points-highlight {
+      color: #60a5fa;
+      font-weight: 700;
+      font-feature-settings: "tnum";
+    }
+
+    .points-highlight.completed {
+      color: var(--success-text);
+    }
+
+    .points-highlight.overflow {
+      color: var(--danger);
+    }
+
+    .progress-bar-bg {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 0.25s ease, background-color 0.25s ease;
+    }
+
+    .progress-bar-fill.overflow {
+      background: var(--danger);
+    }
+
+    .scoring-notice {
+      margin-top: 10px;
+      font-size: 0.78rem;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Names Grid (Clean List of 13 Members) */
+    .members-grid {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .name-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.15s ease;
+      text-align: left;
+    }
+
+    .name-card:hover {
+      border-color: #484f58;
+      background: var(--surface-elevated);
+      transform: translateY(-1px);
+    }
+
+    .name-card.has-data {
+      border-color: rgba(37, 99, 235, 0.45);
+      background: rgba(31, 36, 44, 0.95);
+    }
+
+    .name-card-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .avatar-sm {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #e6edf3;
+      flex-shrink: 0;
+    }
+
+    .name-info {
+      min-width: 0;
+    }
+
+    .person-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .person-status {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      margin-top: 1px;
+    }
+
+    .person-status.reviewed {
+      color: #60a5fa;
+      font-weight: 500;
+    }
+
+    .badge-score-pill {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .name-card.has-data .badge-score-pill {
+      background: var(--accent-soft);
+      border-color: rgba(37, 99, 235, 0.4);
+      color: #93c5fd;
+    }
+
+    /* Pop-up Modal for Evaluation & Scoring */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .popup-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+      animation: modalSlide 0.2s ease;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(12px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .popup-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .popup-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: #93c5fd;
+    }
+
+    .popup-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .popup-role {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      transition: color 0.15s;
+    }
+
+    .btn-close:hover {
+      color: #fff;
+    }
+
+    .popup-section {
+      margin-bottom: 20px;
+    }
+
+    .popup-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* 1-5 Score selector buttons */
+    .score-buttons-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .btn-score-opt {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 1.05rem;
+      font-weight: 600;
+      padding: 12px 0;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .btn-score-opt span.pts-sub {
+      font-size: 0.65rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .btn-score-opt:hover {
+      border-color: #484f58;
+      background: var(--surface-elevated);
+    }
+
+    .btn-score-opt.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-score-opt.active span.pts-sub {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .popup-textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 0.88rem;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 85px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .popup-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .popup-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn-save-popup {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .btn-save-popup:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Fixed Submit footer */
+    .submit-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(22, 27, 34, 0.95);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 14px 24px;
+      z-index: 90;
+    }
+
+    .submit-inner {
+      max-width: 920px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .submit-meta {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .btn-submit {
+      padding: 10px 22px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      font-family: inherit;
+      background: var(--accent);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.15s, transform 0.05s;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 72px;
+      right: 24px;
+      max-width: 360px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 1000;
+      display: none;
+    }
+
+    .toast.success {
+      background: #1f3724;
+      border: 1px solid #238636;
+      color: #7ee787;
+    }
+
+    .toast.error {
+      background: #3c1e21;
+      border: 1px solid #f85149;
+      color: #ff7b72;
+    }
+
+    /* Success Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 600;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 28px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      border: 1px solid rgba(37, 99, 235, 0.4);
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 1.3rem;
+    }
+
+    @media (max-width: 640px) {
+      .identity-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .identity-input {
+        width: 100%;
+      }
+      .members-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="top-nav-inner">
+      <div class="nav-brand">
+        <span>Team Performance Review</span>
+        <span class="brand-pill">Internal</span>
+      </div>
+      <!--
+      <div class="nav-links">
+        <a href="/qr">QR Display</a>
+      </div>
+      -->
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header>
+    <h1>Mid-Year Performance Review</h1>
+    <p class="subtitle">Click on each team member below to award points and add your constructive review feedback.</p>
+  </header>
+
+  <!-- Reviewer Identity -->
+  <div class="reviewer-identity">
+    <div class="identity-card">
+      <div>
+        <div class="identity-title">Your Name <span style="color: var(--danger); font-size: 0.9rem;">*</span></div>
+        <div class="identity-hint">Required — enter your name before submitting your reviews.</div>
+      </div>
+      <input type="text" id="voterName" class="identity-input" placeholder="e.g. John Doe" maxlength="50" required>
+    </div>
+  </div>
+
+  <!-- Budget Tracker (0 to 26 points) -->
+  <div class="budget-tracker">
+    <div class="tracker-card">
+      <div class="tracker-header">
+        <span class="budget-label">Point Budget</span>
+        <div class="budget-numbers">
+          <span id="allocatedPoints" class="points-highlight">0</span>
+          <span style="color: var(--text-dim); font-size: 0.9rem;">/ 26 pts allocated</span>
+          <span style="font-size: 0.84rem; margin-left: 6px; color: var(--text-muted);">
+            (<span id="remainingPoints">26</span> remaining)
+          </span>
+        </div>
+      </div>
+      <div class="progress-bar-bg">
+        <div id="progressFill" class="progress-bar-fill"></div>
+      </div>
+      <div class="scoring-notice">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        <span>Award between <strong>1 to 5 points</strong> per team member.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 13 Team Members Clean Landing List -->
+  <div class="members-grid" id="presentersList">
+    <!-- Rendered via JS -->
+  </div>
+
+  <!-- Sticky Bottom Submit Bar -->
+  <div class="submit-bar">
+    <div class="submit-inner">
+      <div class="submit-meta">
+        <span id="statusBarText">Allocated 0 of 26 points</span>
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="submitScores()">
+        Submit Evaluations
+      </button>
+    </div>
+  </div>
+
+  <!-- Individual Member Scoring Popup -->
+  <div class="popup-overlay" id="popupModal">
+    <div class="popup-card">
+      <div class="popup-header">
+        <div class="popup-user">
+          <div class="popup-avatar" id="popupAvatar">--</div>
+          <div>
+            <div class="popup-name" id="popupName">--</div>
+            <div class="popup-role">Mid-Year Performance Review</div>
+          </div>
+        </div>
+        <button class="btn-close" onclick="closePopup()">×</button>
+      </div>
+
+      <!-- 1 to 5 Points Selector -->
+      <div class="popup-section">
+        <div class="popup-label">
+          <span>Award Points</span>
+          <span style="color: #60a5fa; font-weight: 500; font-size: 0.74rem;">Scale: 1 (min) – 5 (max)</span>
+        </div>
+        <div class="score-buttons-row">
+          <button type="button" class="btn-score-opt" onclick="selectScore(1)">
+            1 <span class="pts-sub">pt</span>
+          </button>
+          <button type="button" class="btn-score-opt" onclick="selectScore(2)">
+            2 <span class="pts-sub">pts</span>
+          </button>
+          <button type="button" class="btn-score-opt" onclick="selectScore(3)">
+            3 <span class="pts-sub">pts</span>
+          </button>
+          <button type="button" class="btn-score-opt" onclick="selectScore(4)">
+            4 <span class="pts-sub">pts</span>
+          </button>
+          <button type="button" class="btn-score-opt" onclick="selectScore(5)">
+            5 <span class="pts-sub">pts</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Comments Field -->
+      <div class="popup-section">
+        <div class="popup-label">
+          <span>Feedback Comments</span>
+        </div>
+        <textarea id="popupComment" class="popup-textarea" placeholder="Add constructive mid-year review feedback (key contributions, strengths, growth areas)..."></textarea>
+      </div>
+
+      <div class="popup-actions">
+        <button type="button" class="btn-save-popup" onclick="savePopup()">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Success Modal -->
+  <div id="successModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon">✓</div>
+      <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 6px; color: #fff;">Reviews Submitted</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 20px;">
+        Your mid-year evaluation points and feedback comments have been recorded successfully.
+      </p>
+      <button class="btn-submit" onclick="resetFormForNewEntry()">Done / Submit Another</button>
+    </div>
+  </div>
+
+  <script>
+    const MAX_DISCRETIONARY = 26; // 39 total budget - (13 baseline) = 26 points
+    let people = [];
+    let state = {}; // { [id]: { points: 1, comment: '' } }
+    let activePersonId = null;
+
+    async function loadPeople() {
+      try {
+        const res = await fetch('/api/people');
+        people = await res.json();
+        initState();
+        renderPresenters();
+        updateBudgetUI();
+      } catch (err) {
+        showToast('Failed to load team members', true);
+      }
+    }
+
+    function initState() {
+      state = {};
+      people.forEach(p => {
+        state[p.id] = { points: 1, comment: '' };
+      });
+    }
+
+    function renderPresenters() {
+      const container = document.getElementById('presentersList');
+      container.innerHTML = people.map((p, idx) => {
+        const initials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        const pts = state[p.id].points || 1;
+        const hasCustomData = pts > 1 || (state[p.id].comment && state[p.id].comment.trim());
+        const hasComment = Boolean(state[p.id].comment && state[p.id].comment.trim());
+
+        return `
+          <div class="name-card ${hasCustomData ? 'has-data' : ''}" onclick="openPopup(${p.id})">
+            <div class="name-card-left">
+              <div class="avatar-sm">${initials}</div>
+              <div class="name-info">
+                <div class="person-name">${escapeHtml(p.name)}</div>
+                <div class="person-status ${hasCustomData ? 'reviewed' : ''}">
+                  ${hasComment ? '✓ Feedback added' : 'Click to evaluate'}
+                </div>
+              </div>
+            </div>
+            <div class="badge-score-pill">
+              ${pts} pt${pts === 1 ? '' : 's'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getDiscretionaryAllocated() {
+      // Sum points above the 1-point baseline
+      return Object.values(state).reduce((sum, item) => sum + ((parseInt(item.points, 10) || 1) - 1), 0);
+    }
+
+    function updateBudgetUI() {
+      const allocated = getDiscretionaryAllocated();
+      const remaining = MAX_DISCRETIONARY - allocated;
+      const pct = Math.min(100, Math.round((allocated / MAX_DISCRETIONARY) * 100));
+
+      const allocatedEl = document.getElementById('allocatedPoints');
+      const remainingEl = document.getElementById('remainingPoints');
+      const progressFill = document.getElementById('progressFill');
+      const statusText = document.getElementById('statusBarText');
+      const submitBtn = document.getElementById('submitBtn');
+
+      allocatedEl.textContent = allocated;
+      remainingEl.textContent = remaining;
+      progressFill.style.width = pct + '%';
+
+      allocatedEl.classList.remove('completed', 'overflow');
+      progressFill.classList.remove('overflow');
+
+      if (remaining === 0) {
+        allocatedEl.classList.add('completed');
+        statusText.innerHTML = `<span style="color: var(--success-text); font-weight: 500;">✓ Full 26 points distributed (39 total)</span>`;
+      } else if (remaining < 0) {
+        allocatedEl.classList.add('overflow');
+        progressFill.classList.add('overflow');
+        statusText.innerHTML = `<span style="color: var(--danger); font-weight: 500;">⚠ Over budget by ${Math.abs(remaining)} pts</span>`;
+      } else {
+        statusText.textContent = `${allocated} of 26 points allocated (${remaining} remaining)`;
+      }
+
+      submitBtn.disabled = remaining < 0;
+    }
+
+    // Modal popup management
+    function openPopup(personId) {
+      activePersonId = personId;
+      const person = people.find(p => p.id === personId);
+      if (!person) return;
+
+      const initials = person.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('popupAvatar').textContent = initials;
+      document.getElementById('popupName').textContent = person.name;
+      document.getElementById('popupComment').value = state[personId].comment || '';
+
+      updateScoreButtons(state[personId].points || 1);
+      document.getElementById('popupModal').style.display = 'flex';
+    }
+
+    function closePopup() {
+      document.getElementById('popupModal').style.display = 'none';
+      activePersonId = null;
+    }
+
+    function selectScore(score) {
+      if (!activePersonId) return;
+      const current = state[activePersonId].points || 1;
+      const otherDiscretionary = getDiscretionaryAllocated() - (current - 1);
+      const proposedDiscretionary = otherDiscretionary + (score - 1);
+
+      if (proposedDiscretionary > MAX_DISCRETIONARY) {
+        const maxAllowed = 1 + (MAX_DISCRETIONARY - otherDiscretionary);
+        showToast(`Budget limit reached! Max available is ${maxAllowed} pts for this person`, true);
+        return;
+      }
+
+      state[activePersonId].points = score;
+      updateScoreButtons(score);
+      updateBudgetUI();
+    }
+
+    function updateScoreButtons(activeScore) {
+      const btns = document.querySelectorAll('.btn-score-opt');
+      btns.forEach((btn, index) => {
+        if (index + 1 === activeScore) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function savePopup() {
+      if (activePersonId) {
+        state[activePersonId].comment = document.getElementById('popupComment').value.trim();
+      }
+      renderPresenters();
+      updateBudgetUI();
+      closePopup();
+    }
+
+    async function submitScores() {
+      const voterName = (document.getElementById('voterName').value || '').trim();
+      if (!voterName) {
+        showToast('Please enter your name before submitting', true);
+        document.getElementById('voterName').focus();
+        return;
+      }
+
+      const allocated = getDiscretionaryAllocated();
+      if (allocated > MAX_DISCRETIONARY) {
+        showToast(`Cannot submit: allocated ${allocated} of 26 points`, true);
+        return;
+      }
+
+      if (allocated < MAX_DISCRETIONARY) {
+        const remaining = MAX_DISCRETIONARY - allocated;
+        const confirmUnder = confirm(`You have ${remaining} point${remaining === 1 ? '' : 's'} remaining out of 26. Submit anyway?`);
+        if (!confirmUnder) return;
+      }
+
+      const scoresPayload = Object.keys(state).map(id => ({
+        personId: parseInt(id, 10),
+        points: parseInt(state[id].points, 10) || 1,
+        comment: state[id].comment
+      }));
+
+      const submitBtn = document.getElementById('submitBtn');
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Submitting...';
+
+      try {
+        const res = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            voterName,
+            scores: scoresPayload
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          document.getElementById('successModal').style.display = 'flex';
+        } else {
+          showToast(data.error || 'Failed to submit review', true);
+        }
+      } catch (err) {
+        showToast('Network error submitting review', true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit Evaluations';
+      }
+    }
+
+    function resetFormForNewEntry() {
+      document.getElementById('successModal').style.display = 'none';
+      document.getElementById('voterName').value = '';
+      initState();
+      renderPresenters();
+      updateBudgetUI();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showToast(msg, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast ' + (isError ? 'error' : 'success');
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Close modal on Escape
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePopup();
+    });
+
+    loadPeople();
+  </script>
+</body>
+</html>

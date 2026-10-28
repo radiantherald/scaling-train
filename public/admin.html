@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal — Mid-Year Review Scores & Feedback</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-elevated: #1f242c;
+      --surface-hover: #262c36;
+      --border: #30363d;
+      --border-subtle: #21262d;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.12);
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --text-dim: #6e7681;
+      --danger: #f85149;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      padding-bottom: 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Nav */
+    .top-nav {
+      border-bottom: 1px solid var(--border-subtle);
+      background: rgba(22, 27, 34, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 90;
+    }
+
+    .top-nav-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .brand-pill {
+      background: rgba(248, 81, 73, 0.15);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      color: #ff7b72;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      font-family: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-elevated);
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn:hover {
+      background: var(--surface-hover);
+      border-color: #484f58;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-danger {
+      color: #ff7b72;
+      border-color: rgba(248, 81, 73, 0.3);
+      background: rgba(248, 81, 73, 0.08);
+    }
+
+    .btn-danger:hover {
+      background: rgba(248, 81, 73, 0.18);
+    }
+
+    /* Auth Modal / Card */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 17, 23, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .lock-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(248, 81, 73, 0.12);
+      border: 1px solid rgba(248, 81, 73, 0.3);
+      color: #ff7b72;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 1.25rem;
+    }
+
+    .auth-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .auth-desc {
+      color: var(--text-muted);
+      font-size: 0.86rem;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color 0.15s;
+    }
+
+    .auth-input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-submit-auth {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s;
+    }
+
+    .btn-submit-auth:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 24px 0;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 20px;
+    }
+
+    .page-header h1 {
+      font-size: 1.55rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-top: 4px;
+    }
+
+    /* Stats summary */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-top: 6px;
+      color: #fff;
+    }
+
+    /* Filter search bar */
+    .filter-bar {
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .filter-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 0.86rem;
+      font-family: inherit;
+      outline: none;
+      width: 260px;
+    }
+
+    .filter-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* Cards Stack */
+    .cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      transition: border-color 0.15s;
+    }
+
+    .result-card:hover {
+      border-color: #484f58;
+    }
+
+    .card-main-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .member-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .member-heading {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .member-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .score-summary {
+      text-align: right;
+    }
+
+    .score-big {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #60a5fa;
+      line-height: 1;
+      font-feature-settings: "tnum";
+    }
+
+    .score-sublabel {
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 3px;
+    }
+
+    /* Feedback section */
+    .feedback-section {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .feedback-header {
+      font-size: 0.76rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .feedback-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .feedback-bubble {
+      background: var(--bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px 14px;
+    }
+
+    .feedback-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .reviewer-name {
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .points-tag {
+      background: var(--accent-soft);
+      color: #93c5fd;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .feedback-body {
+      font-size: 0.84rem;
+      color: #d1d7e0;
+      line-height: 1.45;
+      white-space: pre-line;
+    }
+
+    .no-feedback {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      font-style: italic;
+    }
+
+    .toast {
+      position: fixed;
+      top: 68px;
+      right: 24px;
+      max-width: 360px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      background: #3c1e21;
+      border: 1px solid #f85149;
+      color: #ff7b72;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 1100;
+      display: none;
+    }
+
+    @media (max-width: 640px) {
+      .top-nav-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .card-main-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .score-summary {
+        text-align: left;
+      }
+      .filter-input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Admin Password Verification Modal -->
+  <div class="auth-overlay" id="authModal">
+    <div class="auth-card">
+      <div class="lock-icon">🔒</div>
+      <h2 class="auth-title">Admin Access Required</h2>
+      <p class="auth-desc">Enter the administrator credentials to view all team scores and feedback comments.</p>
+      <input type="password" id="adminPasswordInput" class="auth-input" placeholder="Enter Admin Password" autocomplete="off">
+      <button class="btn-submit-auth" onclick="verifyAdmin()">Unlock Dashboard</button>
+    </div>
+  </div>
+
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="top-nav-inner">
+      <div class="nav-brand">
+        <span>Team Performance Review</span>
+        <span class="brand-pill">Admin Dashboard</span>
+      </div>
+      <div class="nav-actions">
+        <a href="/" class="btn">Review Portal</a>
+        <!-- <a href="/qr" class="btn">QR Display</a> -->
+        <button class="btn btn-primary" onclick="loadResults()">Refresh</button>
+        <!-- <button class="btn btn-danger" onclick="confirmReset()">Reset Reviews</button> -->
+        <button class="btn" onclick="logoutAdmin()">Sign Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Mid-Year Review — Team Scores & Feedback</h1>
+      <p>Confidential administrative summary of all points assigned and peer comments received.</p>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Evaluations Submitted</div>
+        <div class="stat-value" id="statTotalSubmissions">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Points Assigned</div>
+        <div class="stat-value" id="statTotalPoints">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Written Feedback Comments</div>
+        <div class="stat-value" id="statTotalComments">0</div>
+      </div>
+    </div>
+
+    <!-- Search / Filter -->
+    <div class="filter-bar">
+      <input type="text" id="searchInput" class="filter-input" placeholder="Search team member..." oninput="filterMembers()">
+      <div style="font-size: 0.8rem; color: var(--text-dim);" id="lastUpdated">Auto-refreshes every 5s</div>
+    </div>
+
+    <div class="cards-stack" id="resultsList">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let adminToken = sessionStorage.getItem('admin_auth_pass');
+    let lastData = null;
+
+    function verifyAdmin() {
+      const inputPass = document.getElementById('adminPasswordInput').value.trim();
+      if (!inputPass) {
+        showToast('Please enter the admin password');
+        return;
+      }
+
+      adminToken = inputPass;
+      loadResults(true);
+    }
+
+    async function loadResults(isInitial = false) {
+      if (!adminToken) {
+        document.getElementById('authModal').style.display = 'flex';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/results', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword: adminToken })
+        });
+
+        if (res.status === 401) {
+          sessionStorage.removeItem('admin_auth_pass');
+          adminToken = null;
+          document.getElementById('authModal').style.display = 'flex';
+          showToast('Invalid admin password');
+          return;
+        }
+
+        const data = await res.json();
+        sessionStorage.setItem('admin_auth_pass', adminToken);
+        document.getElementById('authModal').style.display = 'none';
+        lastData = data;
+        renderResults(data);
+      } catch (err) {
+        if (isInitial) showToast('Network error connecting to admin service');
+      }
+    }
+
+    function renderResults(data) {
+      document.getElementById('statTotalSubmissions').textContent = data.totalSubmissions || 0;
+      
+      let sumPoints = 0;
+      let sumComments = 0;
+
+      data.results.forEach(r => {
+        sumPoints += r.totalScore;
+        sumComments += r.comments.length;
+      });
+
+      document.getElementById('statTotalPoints').textContent = sumPoints;
+      document.getElementById('statTotalComments').textContent = sumComments;
+      document.getElementById('lastUpdated').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString();
+
+      filterMembers();
+    }
+
+    function filterMembers() {
+      if (!lastData || !lastData.results) return;
+      const query = (document.getElementById('searchInput').value || '').toLowerCase().trim();
+      const container = document.getElementById('resultsList');
+
+      const filtered = lastData.results.filter(p => p.name.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 40px;">No matching team members found.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(person => {
+        let feedbackHtml = '';
+        if (person.comments && person.comments.length > 0) {
+          feedbackHtml = person.comments.map(c => `
+            <div class="feedback-bubble">
+              <div class="feedback-meta">
+                <span class="reviewer-name">${escapeHtml(c.voterName)}</span>
+                <span class="points-tag">+${c.pointsGiven} pts</span>
+              </div>
+              <div class="feedback-body">${c.comment ? escapeHtml(c.comment) : '<span style="color: var(--text-dim); font-style: italic;">Points assigned without written comment.</span>'}</div>
+            </div>
+          `).join('');
+        } else {
+          feedbackHtml = `<div class="no-feedback">No reviews received yet.</div>`;
+        }
+
+        return `
+          <div class="result-card">
+            <div class="card-main-row">
+              <div class="member-profile">
+                <div>
+                  <div class="member-heading">${escapeHtml(person.name)}</div>
+                  <div class="member-sub">${person.evaluatorCount} reviewer${person.evaluatorCount === 1 ? '' : 's'} submitted feedback</div>
+                </div>
+              </div>
+              <div class="score-summary">
+                <div class="score-big">${person.totalScore}</div>
+                <div class="score-sublabel">Total Points</div>
+              </div>
+            </div>
+
+            <div class="feedback-section">
+              <div class="feedback-header">
+                <span>Received Comments & Point Breakdown (${person.comments ? person.comments.length : 0})</span>
+              </div>
+              <div class="feedback-list">
+                ${feedbackHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function confirmReset() {
+      if (!adminToken) return;
+      if (confirm('Are you sure you want to delete all submitted reviews? This action cannot be reversed.')) {
+        await fetch('/api/admin/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminPassword: adminToken })
+        });
+        loadResults();
+      }
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem('admin_auth_pass');
+      adminToken = null;
+      document.getElementById('adminPasswordInput').value = '';
+      document.getElementById('authModal').style.display = 'flex';
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    document.getElementById('adminPasswordInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') verifyAdmin();
+    });
+
+    // Check if session token exists
+    if (adminToken) {
+      loadResults(true);
+    } else {
+      document.getElementById('authModal').style.display = 'flex';
+    }
+
+    // Auto refresh every 5 seconds if authenticated
+    setInterval(() => {
+      if (adminToken) loadResults();
+    }, 5000);
+  </script>
+</body>
+</html>
