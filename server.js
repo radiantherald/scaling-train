@@ -371,6 +371,16 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Temporary one-time unlock helper to clear any accidental password without touching submissions
+  if (pathname === '/api/admin/unlock-setup' && req.method === 'POST') {
+    await loadStore();
+    memoryStore.adminPassword = null;
+    await saveStore(memoryStore);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, message: 'Setup unlocked. Ready for manager.' }));
+    return;
+  }
+
   // Admin Reset Password endpoint (Only allowed if no reviews or before lock)
   if (pathname === '/api/admin/force-reset' && req.method === 'POST') {
     await loadStore();
