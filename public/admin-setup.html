@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Setup — Master Password</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --text: #f0f6fc;
+      --text-muted: #8b949e;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .setup-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 32px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    }
+
+    .key-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.12);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      font-size: 1.4rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 11px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background-color 0.15s;
+    }
+
+    .btn-submit:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .notice {
+      margin-top: 16px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .error-msg {
+      color: #ff7b72;
+      font-size: 0.82rem;
+      margin-top: 12px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="setup-card" id="cardContainer">
+    <div class="key-icon">🔑</div>
+    <h1>Create Admin Password</h1>
+    <p>Set a master password for the Review Admin Dashboard. Once set, this setup link will be permanently deactivated.</p>
+
+    <div class="form-group">
+      <label for="newPassword">New Admin Password</label>
+      <input type="password" id="newPassword" placeholder="Enter secure password" autocomplete="new-password">
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword">Confirm Password</label>
+      <input type="password" id="confirmPassword" placeholder="Re-enter password" autocomplete="new-password">
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="saveAdminPassword()">Save & Lock Dashboard</button>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <p class="notice">🔒 Only you will have this password. It cannot be changed after setup.</p>
+  </div>
+
+  <script>
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/admin/status');
+        const data = await res.json();
+        if (data.isConfigured) {
+          document.getElementById('cardContainer').innerHTML = `
+            <div class="key-icon">🔒</div>
+            <h1>Setup Completed</h1>
+            <p>The admin master password has already been set and locked permanently.</p>
+            <a href="/admin" class="btn-submit" style="display: block; text-decoration: none; text-align: center;">Go to Admin Login →</a>
+          `;
+        }
+      } catch (e) {}
+    }
+
+    async function saveAdminPassword() {
+      const p1 = document.getElementById('newPassword').value.trim();
+      const p2 = document.getElementById('confirmPassword').value.trim();
+      const err = document.getElementById('errorMsg');
+      const btn = document.getElementById('btnSubmit');
+
+      err.style.display = 'none';
+
+      if (!p1) {
+        err.textContent = 'Password cannot be empty.';
+        err.style.display = 'block';
+        return;
+      }
+
+      if (p1 !== p2) {
+        err.textContent = 'Passwords do not match.';
+        err.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch('/api/admin/setup-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: p1 })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          sessionStorage.setItem('admin_auth_pass', p1);
+          document.getElementById('cardContainer').innerHTML = `
+            <div class="key-icon" style="color: #3fb950; border-color: rgba(63, 185, 80, 0.3); background: rgba(63, 185, 80, 0.1);">✓</div>
+            <h1>Password Successfully Saved</h1>
+            <p>Your master password is now active and this setup link has been permanently locked.</p>
+            <a href="/admin" class="btn-submit" style="display: block; text-decoration: none; text-align: center;">Open Admin Dashboard →</a>
+          `;
+        } else {
+          err.textContent = data.error || 'Failed to save password.';
+          err.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Save & Lock Dashboard';
+        }
+      } catch (e) {
+        err.textContent = 'Network error saving password.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Save & Lock Dashboard';
+      }
+    }
+
+    checkStatus();
+  </script>
+</body>
+</html>

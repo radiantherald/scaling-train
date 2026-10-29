@@ -336,6 +336,41 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Admin Setup Password endpoint (One-time only, permanently locked once set)
+  if (pathname === '/api/admin/setup-password' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const { password } = JSON.parse(body);
+        const cleanPass = (password || '').trim();
+
+        if (!cleanPass) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Password cannot be blank' }));
+          return;
+        }
+
+        await loadStore();
+        if (memoryStore.adminPassword && memoryStore.adminPassword.trim() !== '') {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Master password has already been set and is locked permanently.' }));
+          return;
+        }
+
+        memoryStore.adminPassword = cleanPass;
+        await saveStore(memoryStore);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, message: 'Admin password configured successfully' }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid request' }));
+      }
+    });
+    return;
+  }
+
   // Admin Reset Password endpoint (Only allowed if no reviews or before lock)
   if (pathname === '/api/admin/force-reset' && req.method === 'POST') {
     await loadStore();
@@ -362,22 +397,16 @@ const server = http.createServer(async (req, res) => {
         await loadStore();
         const cleanPass = (adminPassword || '').trim();
 
-        if (!cleanPass) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Password cannot be blank' }));
+        if (!memoryStore.adminPassword) {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Admin setup pending. Please configure the master password via the setup link first.' }));
           return;
         }
 
-        // First time setup
-        if (!memoryStore.adminPassword) {
-          memoryStore.adminPassword = cleanPass;
-          await saveStore(memoryStore);
-        } else {
-          if (memoryStore.adminPassword !== cleanPass) {
-            res.writeHead(401, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Unauthorized: Invalid Admin Password' }));
-            return;
-          }
+        if (!cleanPass || memoryStore.adminPassword !== cleanPass) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Unauthorized: Invalid Admin Password' }));
+          return;
         }
 
         const results = memoryStore.people.map(person => {
@@ -432,6 +461,8 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/' || pathname === '/index.html') {
     serveStatic(req, res, path.join(publicDir, 'index.html'), 'text/html');
+  } else if (pathname === '/admin-setup' || pathname === '/admin-setup.html') {
+    serveStatic(req, res, path.join(publicDir, 'admin-setup.html'), 'text/html');
   } else if (pathname === '/admin' || pathname === '/admin.html') {
     serveStatic(req, res, path.join(publicDir, 'admin.html'), 'text/html');
   } else if (pathname === '/qr' || pathname === '/qr.html') {

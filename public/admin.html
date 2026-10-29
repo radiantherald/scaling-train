@@ -519,24 +519,30 @@
         const data = await res.json();
         isPasswordConfigured = data.isConfigured;
 
-        const authTitle = document.getElementById('authTitle');
-        const authDesc = document.getElementById('authDesc');
-        const passInput = document.getElementById('adminPasswordInput');
-        const btnAuth = document.getElementById('btnAuthSubmit');
-        const lockIcon = document.getElementById('authLockIcon');
+        const authCard = document.querySelector('.auth-card');
 
         if (!isPasswordConfigured) {
-          lockIcon.textContent = '🔑';
-          authTitle.textContent = 'Set Admin Password';
-          authDesc.textContent = 'No password is set yet. Create a secure master password to protect this review dashboard.';
-          passInput.placeholder = 'Create Admin Password';
-          btnAuth.textContent = 'Save Password & Open Dashboard';
+          authCard.innerHTML = `
+            <div class="lock-icon" style="background: rgba(248, 81, 73, 0.12); border-color: rgba(248, 81, 73, 0.3); color: #ff7b72;">🔒</div>
+            <div class="auth-title">Admin Access Restricted</div>
+            <div class="auth-desc" style="margin-bottom: 0;">
+              The admin portal is not yet configured.<br><br>
+              Master setup must be completed by the administrator via the private setup link before this page can be accessed.
+            </div>
+          `;
+          return;
         } else {
-          lockIcon.textContent = '🔒';
-          authTitle.textContent = 'Admin Access Required';
-          authDesc.textContent = 'Enter the administrator password to view all team scores and feedback comments.';
+          // If configured and auth card had pending message, restore normal login inputs
+          const passInput = document.getElementById('adminPasswordInput');
+          if (!passInput) {
+            window.location.reload();
+            return;
+          }
+          document.getElementById('authLockIcon').textContent = '🔒';
+          document.getElementById('authTitle').textContent = 'Admin Access Required';
+          document.getElementById('authDesc').textContent = 'Enter the administrator password to view all team scores and feedback comments.';
           passInput.placeholder = 'Enter Admin Password';
-          btnAuth.textContent = 'Unlock Dashboard';
+          document.getElementById('btnAuthSubmit').textContent = 'Unlock Dashboard';
         }
       } catch (err) {
         console.error('Error checking admin status', err);
