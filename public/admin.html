@@ -682,15 +682,21 @@
       if (e.key === 'Enter') verifyAdmin();
     });
 
-    if (adminToken) {
-      loadResults(true);
-    } else {
-      checkAdminStatus();
-      document.getElementById('authModal').style.display = 'flex';
+    async function initAdminPage() {
+      await checkAdminStatus();
+      if (adminToken && isPasswordConfigured) {
+        loadResults(true);
+      } else {
+        sessionStorage.removeItem('admin_auth_pass');
+        adminToken = null;
+        document.getElementById('authModal').style.display = 'flex';
+      }
     }
 
+    initAdminPage();
+
     setInterval(() => {
-      if (adminToken) loadResults();
+      if (adminToken && isPasswordConfigured) loadResults();
     }, 5000);
   </script>
 </body>
