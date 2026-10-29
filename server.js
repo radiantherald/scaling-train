@@ -198,7 +198,15 @@ async function saveStore(data) {
 }
 
 // Initial load
-loadStore();
+loadStore().then(async (store) => {
+  // If the stored password was the legacy test value "h", purge it automatically
+  if (store && store.adminPassword === 'h') {
+    console.log('[Setup] Purging legacy test password "h" from store...');
+    store.adminPassword = null;
+    await saveStore(store);
+    console.log('[Setup] Admin password reset to null. Setup unlocked.');
+  }
+});
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
