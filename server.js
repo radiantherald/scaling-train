@@ -336,9 +336,15 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Admin Reset Password endpoint
+  // Admin Reset Password endpoint (Only allowed if no reviews or before lock)
   if (pathname === '/api/admin/force-reset' && req.method === 'POST') {
     await loadStore();
+    // Permanently disabled once a password has been set by the manager
+    if (memoryStore.adminPassword && memoryStore.adminPassword.trim() !== '') {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Password is permanently locked and cannot be reset' }));
+      return;
+    }
     memoryStore.adminPassword = null;
     await saveStore(memoryStore);
     res.writeHead(200, { 'Content-Type': 'application/json' });

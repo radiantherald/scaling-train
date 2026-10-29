@@ -463,11 +463,6 @@
       <p class="auth-desc" id="authDesc">No password is set yet. Create a secure master password to protect this review dashboard.</p>
       <input type="password" id="adminPasswordInput" class="auth-input" placeholder="Create Admin Password" autocomplete="off">
       <button class="btn-submit-auth" id="btnAuthSubmit" onclick="verifyAdmin()">Save Password & Open Dashboard</button>
-      <div id="resetPassLink" style="margin-top: 14px; display: none;">
-        <button type="button" onclick="forceResetPassword()" style="background: none; border: none; color: var(--text-dim); font-size: 0.76rem; text-decoration: underline; cursor: pointer;">
-          Reset / Clear Admin Password
-        </button>
-      </div>
     </div>
   </div>
 
@@ -536,33 +531,15 @@
           authDesc.textContent = 'No password is set yet. Create a secure master password to protect this review dashboard.';
           passInput.placeholder = 'Create Admin Password';
           btnAuth.textContent = 'Save Password & Open Dashboard';
-          document.getElementById('resetPassLink').style.display = 'none';
         } else {
           lockIcon.textContent = '🔒';
           authTitle.textContent = 'Admin Access Required';
           authDesc.textContent = 'Enter the administrator password to view all team scores and feedback comments.';
           passInput.placeholder = 'Enter Admin Password';
           btnAuth.textContent = 'Unlock Dashboard';
-          document.getElementById('resetPassLink').style.display = 'block';
         }
       } catch (err) {
         console.error('Error checking admin status', err);
-      }
-    }
-
-    async function forceResetPassword() {
-      if (!confirm('Are you sure you want to clear the admin password so a new one can be created?')) return;
-      try {
-        const res = await fetch('/api/admin/force-reset', { method: 'POST' });
-        const data = await res.json();
-        if (data.success) {
-          sessionStorage.removeItem('admin_auth_pass');
-          adminToken = null;
-          showToast('Admin password cleared! You can now set a new one.');
-          await checkAdminStatus();
-        }
-      } catch (err) {
-        showToast('Error resetting password');
       }
     }
 
