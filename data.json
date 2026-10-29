@@ -1,4 +1,5 @@
 {
+  "adminPassword": "h",
   "people": [
     {
       "id": 1,
@@ -34,7 +35,7 @@
       "id": 6,
       "name": "Harisankar V S",
       "topic": "Mid-Year Review",
-      "passcode": "hari0107"
+      "passcode": null
     },
     {
       "id": 7,
@@ -79,6 +80,5 @@
       "passcode": null
     }
   ],
-  "submissions": [],
-  "adminPassword": "h"
+  "submissions": []
 }
