@@ -143,7 +143,7 @@
       color: var(--text-dim);
     }
 
-    .identity-input {
+    .identity-select {
       width: 280px;
       max-width: 100%;
       background: var(--bg);
@@ -151,13 +151,13 @@
       border-radius: 6px;
       padding: 8px 12px;
       color: #fff;
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       font-family: inherit;
       outline: none;
       transition: border-color 0.15s;
     }
 
-    .identity-input:focus {
+    .identity-select:focus {
       border-color: var(--accent);
     }
 
@@ -689,9 +689,11 @@
     <div class="identity-card">
       <div>
         <div class="identity-title">Your Name <span style="color: var(--danger); font-size: 0.9rem;">*</span></div>
-        <div class="identity-hint">Required — enter your name before submitting your reviews.</div>
+        <div class="identity-hint">Required — select your name from the team list before submitting.</div>
       </div>
-      <input type="text" id="voterName" class="identity-input" placeholder="e.g. John Doe" maxlength="50" required>
+      <select id="voterName" class="identity-select" required>
+        <option value="">-- Select Your Name --</option>
+      </select>
     </div>
   </div>
 
@@ -813,6 +815,16 @@
       try {
         const res = await fetch('/api/people');
         people = await res.json();
+
+        // Populate reviewer dropdown with the 13 members + Vadivelan S
+        const reviewerSelect = document.getElementById('voterName');
+        const reviewers = [...people.map(p => p.name)];
+        if (!reviewers.includes("Vadivelan S")) {
+          reviewers.push("Vadivelan S");
+        }
+        reviewerSelect.innerHTML = '<option value="">-- Select Your Name --</option>' + 
+          reviewers.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+
         initState();
         renderPresenters();
         updateBudgetUI();
@@ -952,7 +964,7 @@
     async function submitScores() {
       const voterName = (document.getElementById('voterName').value || '').trim();
       if (!voterName) {
-        showToast('Please enter your name before submitting', true);
+        showToast('Please select your name from the dropdown before submitting', true);
         document.getElementById('voterName').focus();
         return;
       }

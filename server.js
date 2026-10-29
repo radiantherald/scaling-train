@@ -1,11 +1,18 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin2026';
 const DATA_FILE = path.join(__dirname, 'data.json');
+
+// Supabase environment variables (or Upstash fallback)
+const SUPABASE_URL = process.env.SUPABASE_URL ? process.env.SUPABASE_URL.replace(/\/+$/, '') : null;
+const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_KEY || null;
+
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 const DEFAULT_PEOPLE = [
   { id: 1, name: "Thirumalai Kailsam", topic: "Mid-Year Review" },
@@ -23,39 +30,175 @@ const DEFAULT_PEOPLE = [
   { id: 13, name: "Kamalesh", topic: "Mid-Year Review" }
 ];
 
-function initStorage() {
-  if (!fs.existsSync(DATA_FILE)) {
-    const initialData = {
-      people: DEFAULT_PEOPLE,
-      submissions: []
-    };
-    fs.writeFileSync(DATA_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-  } else {
-    try {
-      const existing = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-      if (!existing.people || existing.people.length === 0) {
-        existing.people = DEFAULT_PEOPLE;
-        fs.writeFileSync(DATA_FILE, JSON.stringify(existing, null, 2), 'utf-8');
+let memoryStore = {
+  adminPassword: null,
+  people: DEFAULT_PEOPLE,
+  submissions: []
+};
+
+// Generic HTTPS request helper (Zero npm dependency)
+function makeHttpsRequest(options, postData = null) {
+  return new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve({ status: res.statusCode, data: body ? JSON.parse(body) : null });
+        } catch (e) {
+          resolve({ status: res.statusCode, data: body });
+        }
+      });
+    });
+
+    req.on('error', (err) => resolve({ error: err }));
+    if (postData) {
+      req.write(typeof postData === 'string' ? postData : JSON.stringify(postData));
+    }
+    req.end();
+  });
+}
+
+// ---------------- Supabase Integration ----------------
+// Loads data from the `app_state` table in Supabase
+async function loadFromSupabase() {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+
+  try {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/app_state?id=eq.1&select=data`);
+    const res = await makeHttpsRequest({
+      hostname: url.hostname,
+      port: 443,
+      path: url.pathname + url.search,
+      method: 'GET',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
       }
+    });
+
+    if (res && res.status === 200 && Array.isArray(res.data) && res.data.length > 0) {
+      return res.data[0].data;
+    }
+  } catch (err) {
+    console.error('Error reading from Supabase:', err.message);
+  }
+  return null;
+}
+
+// Saves data into the `app_state` table in Supabase (upsert)
+async function saveToSupabase(data) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return;
+
+  try {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/app_state`);
+    const payload = JSON.stringify({ id: 1, data: data });
+
+    await makeHttpsRequest({
+      hostname: url.hostname,
+      port: 443,
+      path: url.pathname,
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, payload);
+  } catch (err) {
+    console.error('Error saving to Supabase:', err.message);
+  }
+}
+
+// ---------------- Upstash Fallback ----------------
+async function callUpstash(command, args = []) {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return null;
+  try {
+    const url = new URL(UPSTASH_URL);
+    const postData = JSON.stringify([command, ...args]);
+    const res = await makeHttpsRequest({
+      hostname: url.hostname,
+      port: 443,
+      path: '/',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    }, postData);
+    return res && res.data ? res.data.result : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ---------------- Unified Store Loader ----------------
+async function loadStore() {
+  // 1. Try Supabase first if configured
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    const remote = await loadFromSupabase();
+    if (remote) {
+      memoryStore = remote;
+      return memoryStore;
+    }
+  }
+
+  // 2. Try Upstash if configured
+  if (UPSTASH_URL && UPSTASH_TOKEN) {
+    const remote = await callUpstash('GET', ['midyear_review_store']);
+    if (remote) {
+      memoryStore = typeof remote === 'string' ? JSON.parse(remote) : remote;
+      return memoryStore;
+    }
+  }
+
+  // 3. Fallback to local disk
+  if (fs.existsSync(DATA_FILE)) {
+    try {
+      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      memoryStore = JSON.parse(raw);
     } catch (e) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify({ people: DEFAULT_PEOPLE, submissions: [] }, null, 2), 'utf-8');
+      memoryStore = { adminPassword: null, people: DEFAULT_PEOPLE, submissions: [] };
+    }
+  } else {
+    memoryStore = { adminPassword: null, people: DEFAULT_PEOPLE, submissions: [] };
+    fs.writeFileSync(DATA_FILE, JSON.stringify(memoryStore, null, 2), 'utf-8');
+  }
+
+  return memoryStore;
+}
+
+async function saveStore(data) {
+  memoryStore = data;
+
+  // 1. Write to local disk
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Local disk write error', e);
+  }
+
+  // 2. Sync to Supabase if configured
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    await saveToSupabase(data);
+  }
+
+  // 3. Sync to Upstash if configured
+  if (UPSTASH_URL && UPSTASH_TOKEN) {
+    try {
+      await callUpstash('SET', ['midyear_review_store', JSON.stringify(data)]);
+    } catch (e) {
+      console.error('Upstash sync error', e);
     }
   }
 }
 
-initStorage();
-
-function getStore() {
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
-  } catch (e) {
-    return { people: DEFAULT_PEOPLE, submissions: [] };
-  }
-}
-
-function saveStore(data) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-}
+// Initial load
+loadStore();
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
@@ -81,7 +224,7 @@ function serveStatic(req, res, filePath, contentType) {
   });
 }
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -103,15 +246,16 @@ const server = http.createServer((req, res) => {
       port: PORT,
       localIp: ip,
       votingUrl: `http://${ip}:${PORT}/`,
-      adminUrl: `http://${ip}:${PORT}/admin`
+      adminUrl: `http://${ip}:${PORT}/admin`,
+      storageProvider: SUPABASE_URL ? 'Supabase' : (UPSTASH_URL ? 'Upstash' : 'Local Disk')
     }));
     return;
   }
 
-  // Get people list for evaluation form
+  // People list for evaluation form
   if (pathname === '/api/people' && req.method === 'GET') {
-    const store = getStore();
-    const publicList = store.people.map(p => ({
+    await loadStore();
+    const publicList = memoryStore.people.map(p => ({
       id: p.id,
       name: p.name,
       topic: p.topic
@@ -125,7 +269,7 @@ const server = http.createServer((req, res) => {
   if (pathname === '/api/submit' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const payload = JSON.parse(body);
         const { voterName, scores } = payload;
@@ -157,7 +301,7 @@ const server = http.createServer((req, res) => {
           return;
         }
 
-        const store = getStore();
+        await loadStore();
         const submission = {
           id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
           voterName: voterName.trim(),
@@ -165,13 +309,13 @@ const server = http.createServer((req, res) => {
           totalAllocated: totalPoints,
           scores: scores.map(s => ({
             personId: parseInt(s.personId, 10),
-            points: parseInt(s.points, 10) || 0,
+            points: parseInt(s.points, 10) || 1,
             comment: (s.comment || '').trim()
           }))
         };
 
-        store.submissions.push(submission);
-        saveStore(store);
+        memoryStore.submissions.push(submission);
+        await saveStore(memoryStore);
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ success: true, submissionId: submission.id }));
@@ -183,26 +327,48 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Admin Results Endpoint — STRICTLY PROTECTED BY ADMIN PASSWORD
+  // Admin status endpoint
+  if (pathname === '/api/admin/status' && req.method === 'GET') {
+    await loadStore();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ isConfigured: Boolean(memoryStore.adminPassword) }));
+    return;
+  }
+
+  // Admin Results Endpoint
   if (pathname === '/api/admin/results' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
         const { adminPassword } = JSON.parse(body);
-        if (!adminPassword || adminPassword !== ADMIN_PASSWORD) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Unauthorized: Invalid Admin Password' }));
+        await loadStore();
+        const cleanPass = (adminPassword || '').trim();
+
+        if (!cleanPass) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Password cannot be blank' }));
           return;
         }
 
-        const store = getStore();
-        const results = store.people.map(person => {
+        // First time setup
+        if (!memoryStore.adminPassword) {
+          memoryStore.adminPassword = cleanPass;
+          await saveStore(memoryStore);
+        } else {
+          if (memoryStore.adminPassword !== cleanPass) {
+            res.writeHead(401, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Unauthorized: Invalid Admin Password' }));
+            return;
+          }
+        }
+
+        const results = memoryStore.people.map(person => {
           let totalScore = 0;
           let countEvaluators = 0;
           const comments = [];
 
-          store.submissions.forEach(sub => {
+          memoryStore.submissions.forEach(sub => {
             const personScore = sub.scores.find(s => s.personId === person.id);
             if (personScore) {
               totalScore += personScore.points;
@@ -232,7 +398,7 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
-          totalSubmissions: store.submissions.length,
+          totalSubmissions: memoryStore.submissions.length,
           lastUpdated: new Date().toISOString(),
           results
         }));
@@ -244,33 +410,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Admin Reset Endpoint — STRICTLY PROTECTED BY ADMIN PASSWORD
-  if (pathname === '/api/admin/reset' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
-      try {
-        const { adminPassword } = JSON.parse(body);
-        if (!adminPassword || adminPassword !== ADMIN_PASSWORD) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Unauthorized: Invalid Admin Password' }));
-          return;
-        }
-
-        const store = getStore();
-        store.submissions = [];
-        saveStore(store);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, message: 'All reviews have been reset' }));
-      } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid request' }));
-      }
-    });
-    return;
-  }
-
-  // Static files routing
+  // Static routing
   const publicDir = path.join(__dirname, 'public');
 
   if (pathname === '/' || pathname === '/index.html') {
@@ -302,9 +442,12 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   const ip = getLocalIp();
-  console.log(`Server running at:`);
-  console.log(`- Review Portal (Public / QR): http://${ip}:${PORT}/`);
-  console.log(`- QR Screen Display: http://${ip}:${PORT}/qr`);
-  console.log(`- Admin Review Dashboard (Protected): http://${ip}:${PORT}/admin`);
-  console.log(`  Admin Default Password: ${ADMIN_PASSWORD}`);
+  console.log(`Server running at: http://${ip}:${PORT}/`);
+  if (SUPABASE_URL) {
+    console.log(`[Storage] Cloud persistence active via Supabase`);
+  } else if (UPSTASH_URL) {
+    console.log(`[Storage] Cloud persistence active via Upstash`);
+  } else {
+    console.log(`[Storage] Local data.json persistence active`);
+  }
 });

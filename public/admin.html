@@ -117,16 +117,6 @@
       background: var(--accent-hover);
     }
 
-    .btn-danger {
-      color: #ff7b72;
-      border-color: rgba(248, 81, 73, 0.3);
-      background: rgba(248, 81, 73, 0.08);
-    }
-
-    .btn-danger:hover {
-      background: rgba(248, 81, 73, 0.18);
-    }
-
     /* Auth Modal / Card */
     .auth-overlay {
       position: fixed;
@@ -155,9 +145,9 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
-      background: rgba(248, 81, 73, 0.12);
-      border: 1px solid rgba(248, 81, 73, 0.3);
-      color: #ff7b72;
+      background: rgba(37, 99, 235, 0.12);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      color: #93c5fd;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -243,7 +233,7 @@
     /* Stats summary */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 16px;
       margin-bottom: 28px;
     }
@@ -252,7 +242,7 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 16px 20px;
+      padding: 18px 22px;
     }
 
     .stat-label {
@@ -264,7 +254,7 @@
     }
 
     .stat-value {
-      font-size: 1.6rem;
+      font-size: 1.75rem;
       font-weight: 700;
       margin-top: 6px;
       color: #fff;
@@ -468,11 +458,11 @@
   <!-- Admin Password Verification Modal -->
   <div class="auth-overlay" id="authModal">
     <div class="auth-card">
-      <div class="lock-icon">🔒</div>
-      <h2 class="auth-title">Admin Access Required</h2>
-      <p class="auth-desc">Enter the administrator credentials to view all team scores and feedback comments.</p>
+      <div class="lock-icon" id="authLockIcon">🔒</div>
+      <h2 class="auth-title" id="authTitle">Admin Access Required</h2>
+      <p class="auth-desc" id="authDesc">Enter the administrator credentials to view all team scores and feedback comments.</p>
       <input type="password" id="adminPasswordInput" class="auth-input" placeholder="Enter Admin Password" autocomplete="off">
-      <button class="btn-submit-auth" onclick="verifyAdmin()">Unlock Dashboard</button>
+      <button class="btn-submit-auth" id="btnAuthSubmit" onclick="verifyAdmin()">Unlock Dashboard</button>
     </div>
   </div>
 
@@ -485,9 +475,7 @@
       </div>
       <div class="nav-actions">
         <a href="/" class="btn">Review Portal</a>
-        <!-- <a href="/qr" class="btn">QR Display</a> -->
         <button class="btn btn-primary" onclick="loadResults()">Refresh</button>
-        <!-- <button class="btn btn-danger" onclick="confirmReset()">Reset Reviews</button> -->
         <button class="btn" onclick="logoutAdmin()">Sign Out</button>
       </div>
     </div>
@@ -499,19 +487,11 @@
       <p>Confidential administrative summary of all points assigned and peer comments received.</p>
     </div>
 
-    <!-- Summary Stats -->
+    <!-- Summary Stats (Clean Single Evaluation Counter) -->
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-label">Evaluations Submitted</div>
+        <div class="stat-label">Teammate Evaluations Completed</div>
         <div class="stat-value" id="statTotalSubmissions">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Points Assigned</div>
-        <div class="stat-value" id="statTotalPoints">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Written Feedback Comments</div>
-        <div class="stat-value" id="statTotalComments">0</div>
       </div>
     </div>
 
@@ -531,11 +511,42 @@
   <script>
     let adminToken = sessionStorage.getItem('admin_auth_pass');
     let lastData = null;
+    let isPasswordConfigured = false;
+
+    async function checkAdminStatus() {
+      try {
+        const res = await fetch('/api/admin/status');
+        const data = await res.json();
+        isPasswordConfigured = data.isConfigured;
+
+        const authTitle = document.getElementById('authTitle');
+        const authDesc = document.getElementById('authDesc');
+        const passInput = document.getElementById('adminPasswordInput');
+        const btnAuth = document.getElementById('btnAuthSubmit');
+        const lockIcon = document.getElementById('authLockIcon');
+
+        if (!isPasswordConfigured) {
+          lockIcon.textContent = '🔑';
+          authTitle.textContent = 'Set Admin Password';
+          authDesc.textContent = 'No password is set yet. Create a secure master password to protect this review dashboard.';
+          passInput.placeholder = 'Create Admin Password';
+          btnAuth.textContent = 'Save Password & Open Dashboard';
+        } else {
+          lockIcon.textContent = '🔒';
+          authTitle.textContent = 'Admin Access Required';
+          authDesc.textContent = 'Enter the administrator password to view all team scores and feedback comments.';
+          passInput.placeholder = 'Enter Admin Password';
+          btnAuth.textContent = 'Unlock Dashboard';
+        }
+      } catch (err) {
+        console.error('Error checking admin status', err);
+      }
+    }
 
     function verifyAdmin() {
       const inputPass = document.getElementById('adminPasswordInput').value.trim();
       if (!inputPass) {
-        showToast('Please enter the admin password');
+        showToast('Please enter a password');
         return;
       }
 
@@ -545,6 +556,7 @@
 
     async function loadResults(isInitial = false) {
       if (!adminToken) {
+        await checkAdminStatus();
         document.getElementById('authModal').style.display = 'flex';
         return;
       }
@@ -559,6 +571,7 @@
         if (res.status === 401) {
           sessionStorage.removeItem('admin_auth_pass');
           adminToken = null;
+          await checkAdminStatus();
           document.getElementById('authModal').style.display = 'flex';
           showToast('Invalid admin password');
           return;
@@ -576,19 +589,7 @@
 
     function renderResults(data) {
       document.getElementById('statTotalSubmissions').textContent = data.totalSubmissions || 0;
-      
-      let sumPoints = 0;
-      let sumComments = 0;
-
-      data.results.forEach(r => {
-        sumPoints += r.totalScore;
-        sumComments += r.comments.length;
-      });
-
-      document.getElementById('statTotalPoints').textContent = sumPoints;
-      document.getElementById('statTotalComments').textContent = sumComments;
       document.getElementById('lastUpdated').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString();
-
       filterMembers();
     }
 
@@ -620,13 +621,16 @@
           feedbackHtml = `<div class="no-feedback">No reviews received yet.</div>`;
         }
 
+        // Count only non-empty written comments for the counter badge
+        const writtenCommentsCount = (person.comments || []).filter(c => c.comment && c.comment.trim()).length;
+
         return `
           <div class="result-card">
             <div class="card-main-row">
               <div class="member-profile">
                 <div>
                   <div class="member-heading">${escapeHtml(person.name)}</div>
-                  <div class="member-sub">${person.evaluatorCount} reviewer${person.evaluatorCount === 1 ? '' : 's'} submitted feedback</div>
+                  <div class="member-sub">${person.evaluatorCount} reviewer${person.evaluatorCount === 1 ? '' : 's'} submitted scores</div>
                 </div>
               </div>
               <div class="score-summary">
@@ -637,7 +641,7 @@
 
             <div class="feedback-section">
               <div class="feedback-header">
-                <span>Received Comments & Point Breakdown (${person.comments ? person.comments.length : 0})</span>
+                <span>Received Reviews & Written Feedback (${writtenCommentsCount} written)</span>
               </div>
               <div class="feedback-list">
                 ${feedbackHtml}
@@ -648,22 +652,11 @@
       }).join('');
     }
 
-    async function confirmReset() {
-      if (!adminToken) return;
-      if (confirm('Are you sure you want to delete all submitted reviews? This action cannot be reversed.')) {
-        await fetch('/api/admin/reset', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminPassword: adminToken })
-        });
-        loadResults();
-      }
-    }
-
     function logoutAdmin() {
       sessionStorage.removeItem('admin_auth_pass');
       adminToken = null;
       document.getElementById('adminPasswordInput').value = '';
+      checkAdminStatus();
       document.getElementById('authModal').style.display = 'flex';
     }
 
@@ -689,14 +682,13 @@
       if (e.key === 'Enter') verifyAdmin();
     });
 
-    // Check if session token exists
     if (adminToken) {
       loadResults(true);
     } else {
+      checkAdminStatus();
       document.getElementById('authModal').style.display = 'flex';
     }
 
-    // Auto refresh every 5 seconds if authenticated
     setInterval(() => {
       if (adminToken) loadResults();
     }, 5000);
