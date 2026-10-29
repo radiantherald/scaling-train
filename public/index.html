@@ -691,7 +691,7 @@
         <div class="identity-title">Your Name <span style="color: var(--danger); font-size: 0.9rem;">*</span></div>
         <div class="identity-hint">Required — select your name from the team list before submitting.</div>
       </div>
-      <select id="voterName" class="identity-select" required>
+      <select id="voterName" class="identity-select" onchange="saveDraftToStorage()" required>
         <option value="">-- Select Your Name --</option>
       </select>
     </div>
@@ -811,6 +811,44 @@
     let state = {}; // { [id]: { points: 1, comment: '' } }
     let activePersonId = null;
 
+    const LOCAL_DRAFT_KEY = 'midyear_review_draft_v1';
+
+    function saveDraftToStorage() {
+      try {
+        const voterName = document.getElementById('voterName') ? document.getElementById('voterName').value : '';
+        const payload = {
+          voterName,
+          state
+        };
+        localStorage.setItem(LOCAL_DRAFT_KEY, JSON.stringify(payload));
+      } catch (e) {
+        console.warn('Could not save draft locally', e);
+      }
+    }
+
+    function loadDraftFromStorage() {
+      try {
+        const raw = localStorage.getItem(LOCAL_DRAFT_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.state) {
+            state = Object.assign({}, state, parsed.state);
+          }
+          if (parsed && parsed.voterName && document.getElementById('voterName')) {
+            document.getElementById('voterName').value = parsed.voterName;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not restore draft', e);
+      }
+    }
+
+    function clearDraftFromStorage() {
+      try {
+        localStorage.removeItem(LOCAL_DRAFT_KEY);
+      } catch (e) {}
+    }
+
     async function loadPeople() {
       try {
         const res = await fetch('/api/people');
@@ -826,6 +864,7 @@
           reviewers.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
 
         initState();
+        loadDraftFromStorage();
         renderPresenters();
         updateBudgetUI();
       } catch (err) {
@@ -938,6 +977,7 @@
 
       state[activePersonId].points = score;
       updateScoreButtons(score);
+      saveDraftToStorage();
       updateBudgetUI();
     }
 
@@ -956,6 +996,7 @@
       if (activePersonId) {
         state[activePersonId].comment = document.getElementById('popupComment').value.trim();
       }
+      saveDraftToStorage();
       renderPresenters();
       updateBudgetUI();
       closePopup();
@@ -1003,6 +1044,7 @@
 
         const data = await res.json();
         if (res.ok && data.success) {
+          clearDraftFromStorage();
           document.getElementById('successModal').style.display = 'flex';
         } else {
           showToast(data.error || 'Failed to submit review', true);
@@ -1016,6 +1058,7 @@
     }
 
     function resetFormForNewEntry() {
+      clearDraftFromStorage();
       document.getElementById('successModal').style.display = 'none';
       document.getElementById('voterName').value = '';
       initState();
