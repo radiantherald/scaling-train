@@ -330,8 +330,19 @@ const server = http.createServer(async (req, res) => {
   // Admin status endpoint
   if (pathname === '/api/admin/status' && req.method === 'GET') {
     await loadStore();
+    const hasPass = Boolean(memoryStore.adminPassword && memoryStore.adminPassword.trim() !== '');
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ isConfigured: Boolean(memoryStore.adminPassword) }));
+    res.end(JSON.stringify({ isConfigured: hasPass }));
+    return;
+  }
+
+  // Admin Reset Password endpoint
+  if (pathname === '/api/admin/force-reset' && req.method === 'POST') {
+    await loadStore();
+    memoryStore.adminPassword = null;
+    await saveStore(memoryStore);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, message: 'Admin password cleared' }));
     return;
   }
 
